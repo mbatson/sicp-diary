@@ -203,7 +203,7 @@ Defining necessary procedures (copied from book):
     (sqrt-iter 1.0 x))
 #+end_src
 
-For very small numbers, the ~good-enough?~ test returns true within 0.001 difference from ~x~. The smaller the number, the larger the difference 0.001 makes in comparison. For example:
+For very small numbers, the ~good-enough?~ test returns true within 0.001 difference from ~x~. Combined with the imprecision of arithmetic operations in computers, the smaller the number, the larger the difference 0.001 makes in comparison, making the result increasingly inaccurate. For example:
 
 #+begin_src scheme :noweb strip-export
   <<sqrt-definition>>
@@ -214,7 +214,7 @@ Result:
 : 0.7071078431372548
 
 Expected result:
-: 0.707106781
+: 0.7071067811865475
 
 Second example:
 
@@ -227,7 +227,7 @@ Result:
 : 0.03640532954316447
 
 Expected result:
-: 0.02236068
+: 0.02236067977499789
 
 Third example:
 
@@ -240,9 +240,9 @@ Result:
 : 0.0312500005328125
 
 Expected result:
-: 0.000007071
+: 0.0000070710678118
 
-For numbers large enough, the procedure seems to endlessly recurse. My guess is that the algorithm used never gets within 0.001 of ~x~ (when ~x~ is a sufficiently large number) for ~good-enough?~ to return true, because of the aforementioned limited precision that arithmetic operations have in real computers. Or it does eventually get close enough, but takes so much time the machine is effectively in an endless loop. For example:
+For numbers large enough, the procedure seems to endlessly recur. My guess is that the algorithm used never gets within 0.001 of ~x~ (when ~x~ is a sufficiently large number) for ~good-enough?~ to return true, because of the aforementioned limited precision that arithmetic operations have in real computers. Or it does eventually get close enough, but takes so much time the machine is effectively in an endless loop. For example:
 
 #+begin_src scheme :noweb strip-export
   <<sqrt-definition>>
@@ -250,3 +250,63 @@ For numbers large enough, the procedure seems to endlessly recurse. My guess is 
 #+end_src
 
 This never returns from evaluation, or takes an unreasonable amount of time to eval (greater than at least a few minutes on my machine).
+
+To implement the alternative strategy for ~good-enough?~, we redefine the procedures ~good-enough?~, ~sqrt-iter~, and ~sqrt~ so that ~good-enough?~ stops when the change between the last guess and the new guess is a very small fraction.
+
+#+name: sqrt-redefined
+#+begin_src scheme :noweb strip-export
+  (define (average x y) 
+    (/ (+ x y) 2))
+
+  (define (improve guess x)
+    (average guess (/ x guess)))
+
+  (define (good-enough? guess-current guess-prev)
+    (< (abs (- guess-current guess-prev)) 0.000000000000000000001))
+
+  (define (sqrt-iter guess-current guess-prev x)
+    (if (good-enough? guess-current guess-prev)
+        guess-current
+        (sqrt-iter (improve guess-current x) guess-current x)))
+
+  (define (sqrt x)
+    (sqrt-iter 1.0 0.0 x))
+#+end_src
+
+Now we re-test our very small number using the redefined procedure:
+
+#+begin_src scheme :noweb strip-export
+  <<sqrt-redefined>>
+  (sqrt 0.00000000005)
+#+end_src
+
+Result:
+: 0.0000070710678118654756
+
+Expected result:
+: 0.0000070710678118654752
+
+And the very large number that our old procedure couldn't compute:
+
+#+begin_src scheme :noweb strip-export
+  <<sqrt-redefined>>
+  (sqrt 938129012232597533532523)
+#+end_src
+
+Result:
+: 968570602606.0245
+
+Expected result:
+: 968570602606.0245
+
+And for good measure a perfectly average, middle-of-the-road number:
+
+#+begin_src scheme :noweb strip-export
+  <<sqrt-redefined>>
+  (sqrt 144)
+#+end_src
+
+Result:
+: 12.0
+
+*** Exercise 1.8
