@@ -1,5 +1,5 @@
 #+TITLE: SICP Diary
-#+OPTIONS: num:nil
+#+OPTIONS: num:nil tex:t
 
 * 1. Building Abstractions with Procedures
 
@@ -38,20 +38,24 @@ All correct.
 
 *** Exercise 1.2
 
-Translate the expression into prefix form.
+Translate the following expression into prefix form:
+
+\begin{equation*}
+\frac{5 + 4 + (2 - (3 - (6 + \frac{4}{5})))}
+{3(6 - 2)(2 - 7)}
+\end{equation*}
 
 *My answer*
 
 #+begin_src scheme :results none
-(/ (+ 5
-      4
-      (- 2
-         (- 3
-            (+ 6
-               (/ 4 5)))))
-   (* 3
-      (- 6 2)
-      (- 2 7)))
+  (/ (+ 5
+        4
+        (- 2
+           (- 3
+              (+ 6 (/ 4 5)))))
+     (* 3
+        (- 6 2)
+        (- 2 7)))
 #+end_src
 
 *** Exercise 1.3
@@ -310,3 +314,74 @@ Result:
 : 12.0
 
 *** Exercise 1.8
+
+Newton’s method for cube roots is based on the fact that if y is an approximation to the cube root of x , then a better approximation is given by the value
+
+\begin{equation*}
+\frac{x / y^2 + 2y}{3}
+\end{equation*}
+
+Use this formula to implement a cube-root procedure analogous to the square-root procedure. 
+
+*My answer*
+
+#+name: cbrt-definition
+#+begin_src scheme
+  (define (cbrt x)
+    (cbrt-iter 1.0 0.0 x))
+
+  (define (cbrt-iter guess guess-old x)
+    (if (good-enough? guess guess-old)
+        guess
+        (cbrt-iter (improve x guess) guess x)))
+
+  (define (good-enough? guess guess-old)
+    (< (abs (- guess guess-old)) 0.000000000000000000001))
+
+  (define (square x)
+    (* x x))
+
+  (define (improve x y)
+    (/ (+ (/ x (square y))
+          (* 2 y))
+       3))
+#+end_src
+
+Test 1:
+
+#+begin_src scheme :noweb strip-export
+  <<cbrt-definition>>
+  (cbrt 27)
+#+end_src
+
+Result:
+: 3.0
+
+Expected result:
+: 3
+
+Test 2:
+
+#+begin_src scheme :noweb strip-export
+  <<cbrt-definition>>
+  (cbrt 0.00000000005)
+#+end_src
+
+Result:
+: 0.000368403
+
+Expected result:
+: 0.000368403
+
+Test 3:
+
+#+begin_src scheme :noweb strip-export
+  <<cbrt-definition>>
+  (cbrt 938129012232597533532523)
+#+end_src
+
+Result:
+: 97893575.02127
+
+Expected result:
+: 97893575.02127
