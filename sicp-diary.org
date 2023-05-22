@@ -605,3 +605,38 @@ Implementing the above, we thus get the following procedure:
         n
         (f-iter 2 1 0 2)))
 #+end_src
+
+*** Exercise 1.12
+
+The following pattern of numbers is called Pascal’s triangle.
+
+#+begin_example
+         1
+       1   1
+     1   2   1
+   1   3   3   1
+ 1   4   6   4   1
+       . . .
+#+end_example
+
+The numbers at the edge of the triangle are all 1, and each number inside the triangle is the sum of the two numbers above it. Write a procedure that computes elements of Pascal’s triangle by means of a recursive process. 
+
+*My answer*
+
+Needed to look up guidance on this exercise, as I misunderstood what exactly the exercise was asking for by "comput[ing] elements of Pascal's triangle," and initially was trying to generate all elements in sequence up to a given row.
+
+My mistake here was not understanding properly the idea behind recursive problem solving. Instead of trying to solve the problem by starting at the top of the triangle and working downwards to calculate the given element's value, the recursive way to solve it is to start with the given element, and then work backwards towards the top of the tree to calculate its value.
+
+This procedure will return the value of the element at a given row and column in Pascal's triangle, where the first row, \( n \), is at position \( 0 \), and the first column, \( k \), is at position \( 0 \). So the very top element of the triangle has the coordinate \( 0, 0 \) with a value of \( 1 \).
+
+#+begin_src scheme
+  (define (pascals-triangle-element row col)
+    (cond ((= col row) 1) ; Right-most column.
+          ((= col 0) 1)   ; Left-most column.
+          ((or (< row 0) (< col 0)) 0)   ; Row or column out of bounds.
+          ;; Element is the sum of the above-left element and the above-right
+          ;; element.
+          (else (+ (pascals-triangle-element (- row 1) (- col 1))
+                   (pascals-triangle-element (- row 1) col)))))
+
+#+end_src
