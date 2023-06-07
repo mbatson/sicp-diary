@@ -638,5 +638,4 @@ This procedure will return the value of the element at a given row and column in
           ;; element.
           (else (+ (pascals-triangle-element (- row 1) (- col 1))
                    (pascals-triangle-element (- row 1) col)))))
-
 #+end_src
